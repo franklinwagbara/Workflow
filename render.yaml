@@ -12,15 +12,11 @@ services:
     region: oregon
     plan: free # or starter / standard
     healthCheckPath: /health
-    disk:
-      name: flowforge-data
-      mountPath: /data
-      sizeGB: 1
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ConnectionStrings__DefaultConnection
-        value: Data Source=/data/flowforge.db
+        value: Data Source=flowforge.db
       - key: ALLOWED_ORIGINS
         value: https://flowforge-frontend.onrender.com
 
