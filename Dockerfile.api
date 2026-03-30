@@ -1,0 +1,33 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY FlowForge.sln ./
+COPY backend/FlowForge.Domain/FlowForge.Domain.csproj backend/FlowForge.Domain/
+COPY backend/FlowForge.Application/FlowForge.Application.csproj backend/FlowForge.Application/
+COPY backend/FlowForge.Infrastructure/FlowForge.Infrastructure.csproj backend/FlowForge.Infrastructure/
+COPY backend/FlowForge.Api/FlowForge.Api.csproj backend/FlowForge.Api/
+
+# Restore dependencies
+RUN dotnet restore FlowForge.sln
+
+# Copy full source
+COPY backend/ backend/
+
+# Build
+RUN dotnet publish backend/FlowForge.Api/FlowForge.Api.csproj -c Release -o /app/publish --no-restore
+
+# Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Create data directory for SQLite persistent disk
+RUN mkdir -p /data
+
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Render.com sets PORT dynamically; app reads it at startup
+EXPOSE 10000
+
+ENTRYPOINT ["dotnet", "FlowForge.Api.dll"]

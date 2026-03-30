@@ -1,0 +1,38 @@
+# Render.com Blueprint – FlowForge
+# Deploy: connect this repo on Render → it auto-detects render.yaml
+# Docs: https://docs.render.com/blueprint-spec
+
+services:
+  # ── Backend (.NET 9 API) ────────────────────────────────────
+  - type: web
+    name: flowforge-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    dockerContext: .
+    region: oregon
+    plan: free # or starter / standard
+    healthCheckPath: /health
+    disk:
+      name: flowforge-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        value: Data Source=/data/flowforge.db
+      - key: ALLOWED_ORIGINS
+        value: https://flowforge-frontend.onrender.com
+
+  # ── Frontend (Next.js 16) ───────────────────────────────────
+  - type: web
+    name: flowforge-frontend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.frontend
+    dockerContext: .
+    region: oregon
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        # Build-time: baked into JS bundle via ARG in Dockerfile
+        value: https://flowforge-api.onrender.com/api

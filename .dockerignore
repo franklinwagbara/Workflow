@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+bin/
+obj/
+.vs/
+*.user
+.env.local
+.env*.local
